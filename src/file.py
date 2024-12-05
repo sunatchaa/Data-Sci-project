@@ -128,3 +128,4 @@ df = pd.DataFrame(data_rows)
 
 # Display the DataFrame
 print(df)
+print(data_rows)
