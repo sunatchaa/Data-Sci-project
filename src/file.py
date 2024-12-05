@@ -1,4 +1,3 @@
-
 import os
 import glob
 import json
@@ -128,7 +127,3 @@ df = create_dataframe_from_folders(base_dir)
 
 # Display the DataFrame
 print(df)
-<<<<<<< HEAD
-print(data_rows)
-=======
->>>>>>> 946098c78d2bab8c0263251a05f127389b0de6fd
