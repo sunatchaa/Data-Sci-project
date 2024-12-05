@@ -1,49 +1,49 @@
+
 import os
 import glob
 import json
 import pandas as pd
 
-# Initialize a list to store titles
-titles = []
+# Base directory containing year folders
+base_dir = "data_science"  # Change to your actual directory
 
-# List of folders to process
-folders = ['data_science/2018', 'data_science/2019', 'data_science/2020', 'data_science/2021', 'data_science/2022', 'data_science/2023']  # Add more folders as needed
-
-# Iterate through each folder
-for folder_path in folders:
-    print(f"Processing folder: {folder_path}")
-    
-    # Iterate through files in the folder
-    for filename in os.listdir(folder_path):
-        file_path = os.path.join(folder_path, filename)
-        
-        
-data_rows = []
-
+# Function to process a single JSON file using provided functions
 def process_file(file_path):
-    try:
-        with open(file_path, 'r', encoding='utf-8') as file:
-            data = json.load(file)
-        return {
-            "Cited By Count": citedByCount(data),
-            "Title": title(data),
-            "Description": description(data),
-            "Cover Date": coverDate(data),
-            "Aggregation Type": aggregationType(data),
-            "Authors": ", ".join(author(data)) if author(data) else None,
-            "Subject Areas": ", ".join(subjectArea(data)) if subjectArea(data) else None,
-            "Author Keywords": ", ".join(authKeyword(data)) if authKeyword(data) else None,
-            "Abstract": abstract(data),
-            "Reference Count": refCount(data),
-            "Source ID": sourceID(data)
-        }
-    except KeyError as e:
-        print(f"KeyError for file {file_path}: {e}")
-    except json.JSONDecodeError as e:
-        print(f"JSONDecodeError for file {file_path}: {e}")
-    except Exception as e:
-        print(f"Error processing file {file_path}: {e}")
-    return None
+    with open(file_path, 'r') as f:
+        data = json.load(f)  # Load JSON data
+    # Extract data using the provided functions
+    return {
+        "Cited By Count": citedByCount(data),
+        "Title": title(data),
+        "Description": description(data),
+        "Cover Date": coverDate(data),
+        "Aggregation Type": aggregationType(data),
+        "Authors": ", ".join(author(data)) if author(data) else None,
+        "Subject Areas": ", ".join(subjectArea(data)) if subjectArea(data) else None,
+        "Author Keywords": ", ".join(authKeyword(data)) if authKeyword(data) else None,
+        "Abstract": abstract(data),
+        "Reference Count": refCount(data),
+        "Source ID": sourceID(data)
+    }
+
+# Function to process all files in a folder for a specific year
+def process_year_folder(folder_path, year):
+    rows = []
+    for file_path in glob.glob(os.path.join(folder_path, "*.json")):  # Assuming JSON files
+        row = process_file(file_path)
+        row['Year'] = year  # Add the year to the row
+        rows.append(row)
+    return rows
+
+# Function to process all year folders and create a DataFrame
+def create_dataframe_from_folders(base_dir):
+    all_rows = []
+    for year_folder in sorted(os.listdir(base_dir)):  # Iterate over year folders
+        year_path = os.path.join(base_dir, year_folder)
+        if os.path.isdir(year_path) and year_folder.isdigit():  # Check if it's a valid year folder
+            year_rows = process_year_folder(year_path, year_folder)
+            all_rows.extend(year_rows)
+    return pd.DataFrame(all_rows)
 
 
 def citedByCount(data):
@@ -123,9 +123,12 @@ def sourceID(data):
     else:
         return data['abstracts-retrieval-response']['coredata']['source-id']
 
-
-df = pd.DataFrame(data_rows)
+# Main execution
+df = create_dataframe_from_folders(base_dir)
 
 # Display the DataFrame
 print(df)
+<<<<<<< HEAD
 print(data_rows)
+=======
+>>>>>>> 946098c78d2bab8c0263251a05f127389b0de6fd
