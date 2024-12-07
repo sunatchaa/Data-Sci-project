@@ -1,8 +1,13 @@
 import pandas as pd
 from collections import Counter
+import os
+
+# Path relative to the script's directory
+script_dir = os.getcwd()
+path = os.path.join(script_dir, "../Data-Sci-Project/results/extracted_data.csv")
 
 # Load CSV into DataFrame
-df = pd.read_csv('C:/Users/PangSunatcha/OneDrive - Chulalongkorn University/Documents/Y2S1 files/Data Sci/proj/Data-Sci-project/localresults/extracted_data.csv')
+df = pd.read_csv(path)
 
 def findsa(list):
     
@@ -34,5 +39,5 @@ subject_map = {
 
 
 df['Subject Areas'] = df['Subject Areas'].map(subject_map)
-
-df.to_csv('C:/Users/PangSunatcha/OneDrive - Chulalongkorn University/Documents/Y2S1 files/Data Sci/proj/Data-Sci-project/results/formatted_subjectAreas.csv', index=False)
+print (df)
+#df.to_csv('C:/Users/PangSunatcha/OneDrive - Chulalongkorn University/Documents/Y2S1 files/Data Sci/proj/Data-Sci-project/results/formatted_subjectAreas.csv', index=False)
