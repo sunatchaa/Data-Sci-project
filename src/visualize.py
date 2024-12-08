@@ -12,7 +12,7 @@ def load_data(file_path):
 def category_popularity_page():
     """Display the category popularity page."""
     # Load the data
-    file_path = "/Users/dear/Data Science/Project/predicts.csv"  # Replace with your actual file path
+    file_path = "/Users/dear/Data Science/Project/Data-Sci-project/results/predicts.csv"  # Replace with your actual file path
     df = load_data(file_path)
 
     # Ensure 'cover_date' column is in datetime format
