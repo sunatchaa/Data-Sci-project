@@ -1,8 +1,10 @@
 import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
 import plotly.express as px
+import os
+
+# Path relative to the script's directory
+script_dir = os.getcwd()
 
 @st.cache_data
 def load_data(file_path):
@@ -12,7 +14,8 @@ def load_data(file_path):
 def category_popularity_page():
     """Display the category popularity page."""
     # Load the data
-    file_path = "/Users/dear/Data Science/Project/Data-Sci-project/results/predicts.csv"  # Replace with your actual file path
+    file_path = os.path.join(script_dir, "../results/predicts.csv")
+    #file_path = "results/predicts.csv"  # Replace with your actual file path
     df = load_data(file_path)
 
     # Ensure 'cover_date' column is in datetime format
@@ -38,14 +41,8 @@ def category_popularity_page():
         st.write(filtered_data)
 
         # Plot the data
-        st.subheader("Subject areas Popularity")
-        # fig, ax = plt.subplots(figsize=(8, 6))
-        # sns.barplot(data=category_counts, x='Count', y='Subject Areas', ax=ax)
-        # plt.title("Popular Subject Areas in Selected Date Range")
-        # plt.xlabel("Count")
-        # plt.ylabel("Subject Areas")
-        # st.pyplot(fig)
-        fig = px.bar(
+        st.subheader("Subject Areas Popularity")
+        fig_bar = px.bar(
             category_counts,
             x="Count",
             y="Subject Areas",
@@ -55,25 +52,49 @@ def category_popularity_page():
             labels={"Count": "Total Count", "Subject Areas": "Subject Areas"},
             template="plotly_white",
         )
-        fig.update_traces(texttemplate='%{text}', textposition='outside')
-        fig.update_layout(
+        fig_bar.update_traces(texttemplate='%{text}', textposition='outside')
+        fig_bar.update_layout(
             xaxis_title="Count",
             yaxis_title="Subject Areas",
             hovermode="closest",
         )
-        st.plotly_chart(fig)
-    else:
-        st.error("The CSV file must contain 'cover_date' and 'categories' columns.")
+        st.plotly_chart(fig_bar)
 
-# Example of how to integrate this into a larger app
+
+        # Time series for citation trends
+        st.subheader("Citation Trend Over Time")
+        if 'cited_by_count' in df.columns:
+            # Group by 'cover_date' and calculate the sum of 'cited_by_count'
+            citation_trend = filtered_data.groupby('cover_date')['cited_by_count'].sum().reset_index()
+
+            # Plot the time series
+            fig_line = px.line(
+                citation_trend,
+                x='cover_date',
+                y='cited_by_count',
+                title="Citation Trend Over Time",
+                labels={"cover_date": "Publication Date", "cited_by_count": "Total Citations"},
+                template="plotly_white"
+            )
+            fig_line.update_layout(
+                xaxis_title="Date",
+                yaxis_title="Citations",
+                hovermode="x unified",
+            )
+            st.plotly_chart(fig_line)
+        
+       
+            
+    else:
+        st.error("The CSV file must contain 'cover_date' and 'predicted subject areas' columns.")
+
+# Main Function
 def main():
     st.sidebar.title("Navigation")
-    page = st.sidebar.selectbox("Choose a page:", ["Subject areas Popularity", "Other Feature"])
+    page = st.sidebar.selectbox("Choose a page:", ["Subject Areas Popularity"])
 
-    if page == "Subject areas Popularity":
+    if page == "Subject Areas Popularity":
         category_popularity_page()
-    elif page == "Other Feature":
-        st.write("This is another feature page.")
 
 if __name__ == "__main__":
     main()
