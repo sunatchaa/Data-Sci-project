@@ -62,7 +62,7 @@ def category_popularity_page():
                 template="plotly_white",
             )
             fig_bar.update_traces(texttemplate='%{text}', textposition='outside')
-            fig_bar.update_layout(xaxis_title="Count", yaxis_title="Subject Areas", plot_bgcolor="rgba(11,156,49,0.4)")
+            fig_bar.update_layout(xaxis_title="Count", yaxis_title="Subject Areas", plot_bgcolor="rgba(0,0,0,0)")
             st.plotly_chart(fig_bar, use_container_width=True)
 
             # Time Series Chart: Citation Trends Over Time
@@ -81,9 +81,33 @@ def category_popularity_page():
                     xaxis_title="Date",
                     yaxis_title="Citations",
                     hovermode="x unified",
-                    plot_bgcolor="rgba(11,156,49,0.4)",  # Transparent background
+                    plot_bgcolor="rgba(0,0,0,0)",  # Transparent background
                 )
                 st.plotly_chart(fig_trend, use_container_width=True)
+
+                # Add a new section for Citations by Category
+                st.markdown("### Citations by Category")
+                if 'cited_by_count' in filtered_data.columns:
+                    # Calculate total citations by category
+                    citations_by_category = filtered_data.groupby('predicted subject areas')['cited_by_count'].sum().reset_index()
+                    citations_by_category.columns = ['Subject Areas', 'Total Citations']
+                    citations_by_category = citations_by_category.sort_values(by='Total Citations', ascending=False)
+
+                    # Horizontal bar chart
+                    fig_citations = px.bar(
+                        citations_by_category,
+                        x="Total Citations",
+                        y="Subject Areas",
+                        orientation='h',
+                        text="Total Citations",
+                        title="Citations by Category",
+                        labels={"Total Citations": "Total Citations", "Subject Areas": "Subject Areas"},
+                        template="plotly_white",
+                    )
+                    fig_citations.update_traces(texttemplate='%{text}', textposition='outside')
+                    fig_citations.update_layout(xaxis_title="Total Citations", yaxis_title="Subject Areas")
+                    st.plotly_chart(fig_citations, use_container_width=True)
+
             else:
                 st.error("The CSV file must contain 'cover_date' and 'predicted subject areas' columns.")
     else:
