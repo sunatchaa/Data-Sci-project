@@ -14,79 +14,80 @@ def load_data(file_path):
 def category_popularity_page():
     """Display the category popularity page."""
     # Load the data
-    file_path = os.path.join(script_dir, "results/predicts.csv")
-    #file_path = "results/predicts.csv"  # Replace with your actual file path
+    script_dir = os.path.dirname(__file__)  # Ensure correct directory
+    file_path = os.path.join(script_dir, "../results/predicts.csv")
     df = load_data(file_path)
 
     # Ensure 'cover_date' column is in datetime format
+
     if 'cover_date' in df.columns and 'predicted subject areas' in df.columns:
-        df['cover_date'] = pd.to_datetime(df['cover_date'])
-        
-        # Sidebar filters for date range
-        st.sidebar.header("Filter Options")
-        start_date = st.sidebar.date_input("Start Date", df['cover_date'].min())
-        end_date = st.sidebar.date_input("End Date", df['cover_date'].max())
+            df['cover_date'] = pd.to_datetime(df['cover_date'], errors='coerce')
 
-        # Filter data based on date range
-        filtered_data = df[(df['cover_date'] >= pd.to_datetime(start_date)) & 
-                           (df['cover_date'] <= pd.to_datetime(end_date))]
+            # Sidebar filters for date range
+            st.sidebar.header("Filter Options")
+            start_date = st.sidebar.date_input("Start Date", df['cover_date'].min())
+            end_date = st.sidebar.date_input("End Date", df['cover_date'].max())
 
-        # Group by categories and count occurrences
-        category_counts = filtered_data['predicted subject areas'].value_counts().reset_index()
-        category_counts.columns = ['Subject Areas', 'Count']
+            # Filter data based on date range
+            filtered_data = df[(df['cover_date'] >= pd.to_datetime(start_date)) & 
+                               (df['cover_date'] <= pd.to_datetime(end_date))]
 
-        # Display the filtered data and summary
-        st.header("Popular Subject Areas")
-        st.write(f"Date Range: {start_date} to {end_date}")
-        st.write(filtered_data)
+            # Calculate KPI metrics
+            total_entries = len(filtered_data)
+            unique_categories = filtered_data['predicted subject areas'].nunique()
+            total_citations = filtered_data['cited_by_count'].sum() if 'cited_by_count' in filtered_data.columns else 0
 
-        # Plot the data
-        st.subheader("Subject Areas Popularity")
-        fig_bar = px.bar(
-            category_counts,
-            x="Count",
-            y="Subject Areas",
-            orientation='h',  # Horizontal bar chart
-            text="Count",  # Show the count on bars
-            title="Popular Subject Areas in Selected Date Range",
-            labels={"Count": "Total Count", "Subject Areas": "Subject Areas"},
-            template="plotly_white",
-        )
-        fig_bar.update_traces(texttemplate='%{text}', textposition='outside')
-        fig_bar.update_layout(
-            xaxis_title="Count",
-            yaxis_title="Subject Areas",
-            hovermode="closest",
-        )
-        st.plotly_chart(fig_bar)
+            # Display KPI Cards with a more visually appealing layout
+            st.markdown("### Key Metrics")
+            kpi_cols = st.columns(3)
+            with kpi_cols[0]:
+                st.metric("Total Entries", total_entries)
+            with kpi_cols[1]:
+                st.metric("Unique Categories", unique_categories)
+            with kpi_cols[2]:
+                st.metric("Total Citations", total_citations)
 
-
-        # Time series for citation trends
-        st.subheader("Citation Trend Over Time")
-        if 'cited_by_count' in df.columns:
-            # Group by 'cover_date' and calculate the sum of 'cited_by_count'
-            citation_trend = filtered_data.groupby('cover_date')['cited_by_count'].sum().reset_index()
-
-            # Plot the time series
-            fig_line = px.line(
-                citation_trend,
-                x='cover_date',
-                y='cited_by_count',
-                title="Citation Trend Over Time",
-                labels={"cover_date": "Publication Date", "cited_by_count": "Total Citations"},
-                template="plotly_white"
+            # Bar Chart: Subject Areas Popularity
+            st.markdown("### Subject Areas Popularity")
+            category_counts = filtered_data['predicted subject areas'].value_counts().reset_index()
+            category_counts.columns = ['Subject Areas', 'Count']
+            fig_bar = px.bar(
+                category_counts,
+                x="Count",
+                y="Subject Areas",
+                orientation='h',  # Horizontal bar chart
+                text="Count",
+                title="Popular Subject Areas",
+                labels={"Count": "Total Count", "Subject Areas": "Subject Areas"},
+                template="plotly_white",
             )
-            fig_line.update_layout(
-                xaxis_title="Date",
-                yaxis_title="Citations",
-                hovermode="x unified",
-            )
-            st.plotly_chart(fig_line)
-        
-       
-            
+            fig_bar.update_traces(texttemplate='%{text}', textposition='outside')
+            fig_bar.update_layout(xaxis_title="Count", yaxis_title="Subject Areas", plot_bgcolor="rgba(11,156,49,0.4)")
+            st.plotly_chart(fig_bar, use_container_width=True)
+
+            # Time Series Chart: Citation Trends Over Time
+            st.markdown("### Citation Trends Over Time")
+            if 'cited_by_count' in filtered_data.columns:
+                citation_trend = filtered_data.groupby('cover_date')['cited_by_count'].sum().reset_index()
+                fig_trend = px.line(
+                    citation_trend,
+                    x='cover_date',
+                    y='cited_by_count',
+                    title="Citation Trends Over Time",
+                    labels={"cover_date": "Publication Date", "cited_by_count": "Total Citations"},
+                    template="plotly_white",
+                )
+                fig_trend.update_layout(
+                    xaxis_title="Date",
+                    yaxis_title="Citations",
+                    hovermode="x unified",
+                    plot_bgcolor="rgba(11,156,49,0.4)",  # Transparent background
+                )
+                st.plotly_chart(fig_trend, use_container_width=True)
+            else:
+                st.error("The CSV file must contain 'cover_date' and 'predicted subject areas' columns.")
     else:
-        st.error("The CSV file must contain 'cover_date' and 'predicted subject areas' columns.")
+        st.warning("Please upload a CSV file to proceed.")
 
 # Main Function
 def main():
