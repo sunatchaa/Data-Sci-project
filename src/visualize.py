@@ -5,7 +5,7 @@ import os
 
 # Path relative to the script's directory
 script_dir = os.getcwd()
-
+print(script_dir)
 @st.cache_data
 def load_data(file_path):
     """Load the CSV file and return a DataFrame."""
@@ -14,7 +14,7 @@ def load_data(file_path):
 def category_popularity_page():
     """Display the category popularity page."""
     # Load the data
-    file_path = os.path.join(script_dir, "../results/predicts.csv")
+    file_path = os.path.join(script_dir, "results/predicts.csv")
     #file_path = "results/predicts.csv"  # Replace with your actual file path
     df = load_data(file_path)
 
