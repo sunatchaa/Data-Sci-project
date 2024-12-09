@@ -4,7 +4,7 @@ import os
 
 # Path relative to the script's directory
 script_dir = os.getcwd()
-path = os.path.join(script_dir, "../Data-Sci-Project/results/extracted_data.csv")
+path = os.path.join(script_dir, "../Data-Sci-Project/localresults/extracted_data.csv")
 
 # Load CSV into DataFrame
 df = pd.read_csv(path)
@@ -23,7 +23,7 @@ def findsa(list):
         # If there's a tie in count, no need to update since we return the first one
     return most_frequent_item
     
-df['Subject Areas'] = df['Subject Areas'].str.split(', ').apply(findsa)
+df['Subject Areas'] = df['Subject Code'].str.split(', ').apply(findsa)
 
 subject_map = {
     "AGRI": "Agricultural and Biological Sciences", "ARTS": "Arts and Humanities", "BIOC": "Biochemistry",
@@ -39,5 +39,6 @@ subject_map = {
 
 
 df['Subject Areas'] = df['Subject Areas'].map(subject_map)
-print (df)
-#df.to_csv('C:/Users/PangSunatcha/OneDrive - Chulalongkorn University/Documents/Y2S1 files/Data Sci/proj/Data-Sci-project/results/formatted_subjectAreas.csv', index=False)
+df.drop('Processed Words', axis=1, inplace=True)
+print (df["Subject Areas"])
+df.to_csv('C:/Users/PangSunatcha/OneDrive - Chulalongkorn University/Documents/Y2S1 files/Data Sci/proj/Data-Sci-project/results/formatted_subjectAreas2.csv', index=False)
