@@ -206,25 +206,26 @@ def citation_page():
             st.plotly_chart(fig_trend, use_container_width=True)
 
         # Citations by Category
-        st.markdown("### Citations by Category")
+        st.markdown("### Average citations by Category")
         if 'Citation Count' in filtered_data.columns:
             # Calculate total citations by category
-            citations_by_category = filtered_data.groupby('Subject Area')['Citation Count'].sum().reset_index()
-            citations_by_category.columns = ['Subject Areas', 'Total Citations']
-            citations_by_category = citations_by_category.sort_values(by='Total Citations', ascending=False)
+            citations_by_category = filtered_data.groupby('Subject Area')['Citation Count'].mean().reset_index()
+            citations_by_category.columns = ['Subject Areas', 'Average Citations']
+            citations_by_category['Average Citations'] = citations_by_category['Average Citations'].round(3)
+            citations_by_category = citations_by_category.sort_values(by='Average Citations', ascending=False)
 
             fig_citations = px.bar(
                 citations_by_category,
-                x="Total Citations",
+                x="Average Citations",
                 y="Subject Areas",
                 orientation='h',
-                text="Total Citations",
+                text="Average Citations",
                 title="Citations by Category",
-                labels={"Total Citations": "Total Citations", "Subject Areas": "Subject Areas"},
+                labels={"Average Citations": "Average Citations", "Subject Areas": "Subject Areas"},
                 template="plotly_white",
             )
             fig_citations.update_traces(texttemplate='%{text}', textposition='outside')
-            fig_citations.update_layout(xaxis_title="Total Citations", yaxis_title="Subject Areas")
+            fig_citations.update_layout(xaxis_title="Average Citations", yaxis_title="Subject Areas")
             st.plotly_chart(fig_citations, use_container_width=True)
 
 # Main Function
