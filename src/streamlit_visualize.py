@@ -88,7 +88,21 @@ def category_popularity_page():
 
 # Filter the data where the selected subject code is in the 'Subject Code' list
     filtered_data = data[data['Subject Area'].apply(lambda x: selected_subject_code in x)]
+    st.markdown("### Subject Area Popularity Over Time")
+    filtered_data['Cover Date'] = pd.to_datetime(filtered_data['Cover Date'])  # Ensure 'Cover Date' is datetime
+    time_counts = filtered_data.groupby(filtered_data['Cover Date'].dt.to_period("M")).size().reset_index(name='Count')
+    time_counts['Cover Date'] = time_counts['Cover Date'].dt.to_timestamp()
 
+    fig_line = px.line(
+        time_counts,
+        x='Cover Date',
+        y='Count',
+        title=f"Popularity Over Time for {selected_subject_code}",
+        labels={'Cover Date': 'Date', 'Count': 'Count'},
+        template='plotly_white'
+    )
+    fig_line.update_layout(xaxis_title="Date", yaxis_title="Count", plot_bgcolor="rgba(0,0,0,0)")
+    st.plotly_chart(fig_line, use_container_width=True)
 # Remove duplicates in the 'Subject Code' column by converting the list into a set and back to a list
     filtered_data['Subject Area'] = filtered_data['Subject Area'].apply(lambda x: list(set(x)))
 
@@ -188,7 +202,10 @@ def citation_page():
         # Citation Trends Over Time
         st.markdown("### Citation Trends Over Time")
         if 'Citation Count' in filtered_data.columns:
-            citation_trend = filtered_data.groupby('Cover Date')['Citation Count'].sum().reset_index()
+            filtered_data['Cover Date'] = pd.to_datetime(filtered_data['Cover Date'])  # Ensure 'Cover Date' is datetime
+            citation_trend = filtered_data.groupby(filtered_data['Cover Date'].dt.to_period("M"))['Citation Count'].sum().reset_index()
+            citation_trend['Cover Date'] = citation_trend['Cover Date'].dt.to_timestamp()
+
             fig_trend = px.line(
                 citation_trend,
                 x='Cover Date',
